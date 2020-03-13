@@ -103,29 +103,23 @@ function viewEmployee() {
     // console.log(query.sql);
 }
 
-//========================================= 2."View Employees by Department" / READ by, SELECT * FROM
 
-// Make a department array
 
 function viewEmployeeByDepartment() {
     console.log("Viewing employees by department\n");
 
     var query =
         `SELECT d.id, d.name, r.salary AS budget
-  FROM employee e
-  LEFT JOIN role r
-	ON e.role_id = r.id
-  LEFT JOIN department d
-  ON d.id = r.department_id
-  GROUP BY d.id, d.name`
+     FROM employeesDB e
+      LEFT JOIN role r
+        ON e.role_id = r.id
+      LEFT JOIN department d
+      ON d.id = r.department_id
+      ORDER BY d.id, d.name`
 
     connection.query(query, function(err, res) {
         if (err) throw err;
 
-        // const departmentChoices = res.map(({ id, name }) => ({
-        //   name: `${id} ${name}`,
-        //   value: id
-        // }));
 
         const departmentChoices = res.map(data => ({
             value: data.id,
@@ -155,32 +149,19 @@ function promptDepartment(departmentChoices) {
             console.log("answer ", answer.departmentId);
 
             var query =
-                `SELECT e.id, e.first_name, e.last_name, r.title, d.name AS department 
-  FROM employee e
-  JOIN role r
-	ON e.role_id = r.id
-  JOIN department d
-  ON d.id = r.department_id
-  WHERE d.id = ?`
 
-            connection.query(query, answer.departmentId, function(err, res) {
-                if (err) throw err;
 
-                console.table("response ", res);
-                console.log(res.affectedRows + "Employees are viewed!\n");
+                connection.query(query, answer.departmentId, function(err, res) {
+                    if (err) throw err;
 
-                firstPrompt();
-            });
+                    console.table("response ", res);
+                    console.log(res.affectedRows + "Employees are viewed!\n");
+
+                    firstPrompt();
+                });
         });
 }
 
-//========================================= 3."View Employees by Manager"
-
-
-
-//========================================= 4."Add Employee" / CREATE: INSERT INTO
-
-// Make a employee array
 
 function addEmployee() {
     console.log("Inserting an employee!")
@@ -210,12 +191,12 @@ function promptInsert(roleChoices) {
     inquirer
         .prompt([{
                 type: "input",
-                name: "first_name",
+                name: "firstname",
                 message: "What is the employee's first name?"
             },
             {
                 type: "input",
-                name: "last_name",
+                name: "lastname",
                 message: "What is the employee's last name?"
             },
             {
@@ -224,12 +205,7 @@ function promptInsert(roleChoices) {
                 message: "What is the employee's role?",
                 choices: roleChoices
             },
-            // {
-            //   name: "manager_id",
-            //   type: "list",
-            //   message: "What is the employee's manager_id?",
-            //   choices: manager
-            // }
+
         ])
         .then(function(answer) {
             console.log(answer);
@@ -237,8 +213,8 @@ function promptInsert(roleChoices) {
             var query = `INSERT INTO employee SET ?`
                 // when finished prompting, insert a new item into the db with that info
             connection.query(query, {
-                    first_name: answer.first_name,
-                    last_name: answer.last_name,
+                    firstname: answer.firstname,
+                    lastname: answer.lastname,
                     role_id: answer.roleId,
                     manager_id: answer.managerId,
                 },
@@ -254,23 +230,20 @@ function promptInsert(roleChoices) {
         });
 }
 
-//========================================= 5."Remove Employees" / DELETE, DELETE FROM
-
-// Make a employee array to delete
 
 function removeEmployees() {
     console.log("Deleting an employee");
 
     var query =
-        `SELECT e.id, e.first_name, e.last_name
+        `SELECT e.id, e.firstname, e.lastname
       FROM employee e`
 
     connection.query(query, function(err, res) {
         if (err) throw err;
 
-        const deleteEmployeeChoices = res.map(({ id, first_name, last_name }) => ({
+        const deleteEmployeeChoices = res.map(({ id, firstname, lastname }) => ({
             value: id,
-            name: `${id} ${first_name} ${last_name}`
+            name: `${id} ${firstname} ${lastname}`
         }));
 
         console.table(res);
@@ -318,21 +291,21 @@ function employeeArray() {
     console.log("Updating an employee");
 
     var query =
-        `SELECT e.id, e.first_name, e.last_name, r.title, d.name AS department, r.salary, CONCAT(m.first_name, ' ', m.last_name) AS manager
-  FROM employee e
+        `SELECT e.id, e.firstname, e.lastname, r.title, d.name AS department, r.salary, CONCAT(m.firstname, ' ', m.lastname) AS manager
+  FROM employeesDB e
   JOIN role r
 	ON e.role_id = r.id
   JOIN department d
   ON d.id = r.department_id
-  JOIN employee m
+  JOIN employeesDB m
 	ON m.id = e.manager_id`
 
     connection.query(query, function(err, res) {
         if (err) throw err;
 
-        const employeeChoices = res.map(({ id, first_name, last_name }) => ({
+        const employeeChoices = res.map(({ id, firstname, lastname }) => ({
             value: id,
-            name: `${first_name} ${last_name}`
+            name: `${firstname} ${lastname}`
         }));
 
         console.table(res);
@@ -409,12 +382,12 @@ function addRole() {
 
     var query =
         `SELECT d.id, d.name, r.salary AS budget
-    FROM employee e
+    FROM employeesDB e
     JOIN role r
     ON e.role_id = r.id
     JOIN department d
     ON d.id = r.department_id
-    GROUP BY d.id, d.name`
+    ORDER BY d.id, d.name`
 
     connection.query(query, function(err, res) {
         if (err) throw err;
